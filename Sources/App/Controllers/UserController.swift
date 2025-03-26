@@ -10,6 +10,8 @@ import Vapor
 import Fluent
 
 final class UserController: RouteCollection, Sendable {
+  let userService = UserService()
+
   func boot(routes: any RoutesBuilder) throws {
     let api = routes.grouped("api")
     
@@ -17,21 +19,9 @@ final class UserController: RouteCollection, Sendable {
   }
   
   func register(_ req: Request) async throws -> HTTPStatus {
-    try User.validate(content: req)
-    
-    let newUser = try req.content.decode(User.self)
-    
-    if let _ = try await User.query(on: req.db)
-      .filter(\.$username == newUser.username)
-      .first() {
-      throw Abort(.conflict, reason: "User already exists")
-    }
-    
-    newUser.password = try await req.password.async.hash(newUser.password)
-    
-    try await newUser.save(on: req.db)
-    
-    return .ok
+    let user = try req.content.decode(User.self)
+            try await userService.createUser(user, request: req)
+            return .ok
   }
   
   
