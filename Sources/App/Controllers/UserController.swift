@@ -19,10 +19,9 @@ final class UserController: RouteCollection, Sendable {
     api.post("login", use: login)
   }
   
-  func register(_ req: Request) async throws -> HTTPStatus {
+  func register(_ req: Request) async throws -> RegisterReponse {
     let user = try req.content.decode(User.self)
-            _ = try await userService.createUser(user, request: req)
-            return .ok
+    return try await userService.createUser(user, request: req)
   }
   
   func login(_ req: Request) async throws -> LoginReponse {

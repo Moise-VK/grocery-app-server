@@ -10,21 +10,21 @@ import Vapor
 import Fluent
 
 struct UserService {
-    func createUser(_ user: User, request: Request) async throws -> User {
-        if let _ = try await User.query(on: request.db)
-            .filter(\.$username == user.username)
-            .first() {
-            throw Abort(.conflict, reason: "User already exists")
-        }
-
-        let newUser = user
-      
-        newUser.password = try await request.password.async.hash(newUser.password)
-      
-        try await newUser.save(on: request.db)
-      
-        return newUser
+  func createUser(_ user: User, request: Request) async throws -> RegisterReponse {
+    if let _ = try await User.query(on: request.db)
+      .filter(\.$username == user.username)
+      .first() {
+      throw Abort(.conflict, reason: "User already exists")
     }
+    
+    let newUser = user
+    
+    newUser.password = try await request.password.async.hash(newUser.password)
+    
+    try await newUser.save(on: request.db)
+    
+    return RegisterReponse(error: false)
+  }
   
   func loginUser(_ user: User, request: Request) async throws -> LoginReponse {
     guard let existingUser = try await User.query(on: request.db).filter(\.$username == user.username)
