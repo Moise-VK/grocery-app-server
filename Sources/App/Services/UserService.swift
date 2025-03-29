@@ -25,4 +25,21 @@ struct UserService {
       
         return newUser
     }
+  
+  func loginUser(_ user: User, request: Request) async throws -> LoginReponse {
+    guard let existingUser = try await User.query(on: request.db).filter(\.$username == user.username)
+      .first() else {
+        throw Abort(.badRequest)
+      }
+    
+    let result = try await request.password.async.verify(user.password, created: existingUser.password)
+    
+    if !result {
+      throw Abort(.badRequest)
+    }
+    
+    let authPayload = try AuthPayload(expiration: .init(value: .distantFuture), userId: existingUser.requireID())
+    
+   return try LoginReponse(error: false, token: request.jwt.sign(authPayload), userId: existingUser.requireID())
+  }
 }

@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
+import JWT
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -16,6 +17,14 @@ public func configure(_ app: Application) async throws {
   
   //register the controllers
   try app.register(collection: UserController())
+  
+  let jwtSalt = Environment.get("JWT_SALT")
+  
+  if (jwtSalt == nil) {
+    fatalError("JWT_SALT environment variable must be set.")
+  }
+  
+  app.jwt.signers.use(.hs256(key: jwtSalt!))
     
     // register routes
     try routes(app)

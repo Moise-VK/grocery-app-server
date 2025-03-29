@@ -16,13 +16,19 @@ final class UserController: RouteCollection, Sendable {
     let api = routes.grouped("api")
     
     api.post("register", use: register)
+    api.post("login", use: login)
   }
   
   func register(_ req: Request) async throws -> HTTPStatus {
     let user = try req.content.decode(User.self)
-            try await userService.createUser(user, request: req)
+            _ = try await userService.createUser(user, request: req)
             return .ok
   }
   
+  func login(_ req: Request) async throws -> LoginReponse {
+    let user = try req.content.decode(User.self)
+    
+    return try await userService.loginUser(user, request: req)
+  }
   
 }
